@@ -2,25 +2,24 @@ import os
 import shutil
 import subprocess
 
-from src.utils.generate_command import generate_cmd
-from src.utils.load_config import GlobalCFG
-from src.utils.data_logger import Logger
-from src.utils.SSIM_stats import ssim_stats
+from utils.generate_command import generate_cmd
+from utils.load_config import GlobalCFG
+from utils.data_logger import Logger
+from utils.SSIM_stats import ssim_stats
 
 log_path = "encode.log"
-result_path = "result.csv"
 
 
 def main():
-    logger = Logger(log_path, result_path)
     gl_config = GlobalCFG()
     if not os.path.isdir(gl_config.out_dir):
         os.mkdir(gl_config.out_dir)
 
+    logger = Logger(log_path, gl_config.result_path)
     commands = generate_cmd(gl_config)
     encode(commands, logger)
 
-    ssim_stats(result_path, gl_config.out_dir)
+    ssim_stats(gl_config.result_path, gl_config.out_dir)
 
 
 def encode(commands, logger):

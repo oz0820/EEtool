@@ -8,6 +8,7 @@ class GlobalCFG:
     out_dir = ""
     ffmpeg_path = ""
     input_file = ""
+    result_path = ""
     yml = {}
 
     encoder = []
@@ -47,6 +48,9 @@ class GlobalCFG:
                     return
             print("出力先フォルダが指定されていません。")
             sys.exit(-101)
+
+        def result_path():
+            self.result_path = self.out_dir + "result.csv"
 
         def ffmpeg():
             if 'ffmpeg_path' in yml:
@@ -140,6 +144,7 @@ class GlobalCFG:
             sys.exit(-109)
 
         out_dir()
+        result_path()
         ffmpeg()
         input_dir()
         encoder()
