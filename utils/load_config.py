@@ -1,5 +1,6 @@
 import subprocess
 import sys
+from datetime import datetime
 
 import yaml
 
@@ -7,7 +8,7 @@ import yaml
 class GlobalCFG:
     out_dir = ""
     ffmpeg_path = ""
-    input_file = ""
+    input_file = []
     result_path = ""
     yml = {}
 
@@ -45,6 +46,10 @@ class GlobalCFG:
                     self.out_dir = yml['out_dir']
                     if self.out_dir[-1:] != "\\":
                         self.out_dir += "\\"
+
+                    sp = self.out_dir.split("<time>")
+                    if len(sp) == 2:
+                        self.out_dir = sp[0] + datetime.now().strftime('%Y%m%d_%H%M%S') + sp[1]
                     return
             print("出力先フォルダが指定されていません。")
             sys.exit(-101)
@@ -67,7 +72,7 @@ class GlobalCFG:
 
         def input_dir():
             if 'input_file' in yml:
-                if isinstance(yml['input_file'], str):
+                if isinstance(yml['input_file'], list):
                     self.input_file = yml['input_file']
                     return
             print("入力ファイルが指定されていません。\n")
