@@ -72,7 +72,7 @@ class GlobalCFG:
 
         def input_dir():
             if 'input_file' in yml:
-                if isinstance(yml['input_file'], list):
+                if isinstance(yml['input_file'], str):
                     self.input_file = yml['input_file']
                     return
             print("入力ファイルが指定されていません。\n")
