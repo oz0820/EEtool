@@ -1,6 +1,9 @@
+import os
+import shutil
 import subprocess
 import sys
 from datetime import datetime
+from pathlib import Path
 
 import yaml
 
@@ -58,17 +61,79 @@ class GlobalCFG:
             self.result_path = self.out_dir + "result.csv"
 
         def ffmpeg():
+            def ffmpeg_get():
+                if not os.path.isdir(".ffmpeg"):
+                    os.mkdir(".ffmpeg")
+
+                # .ffmpegフォルダに何か入ってたら消したい処理
+                if len(os.listdir(".ffmpeg")) != 0:
+                    print(".ffmpegフォルダ内のファイルを削除します。よろしいですか。[Y/n]")
+                    if y_n():
+                        for d in Path(".ffmpeg").glob("*"):
+                            if d.is_dir():
+                                shutil.rmtree(d)
+                            else:
+                                d.unlink(missing_ok=True)
+                    else:
+                        print("多分バグるので削除を許可してください。")
+                        sys.exit(-1)
+
+                url = "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-win64-gpl-shared.zip"
+                print(f"ダウンロードします。\n{url}")
+                subprocess.run(f"curl -L {url} -o .ffmpeg\\ffmpeg.zip", shell=False)
+                print("解凍します。")
+                shutil.unpack_archive(".ffmpeg\\ffmpeg.zip", ".ffmpeg")
+
+                rm_list = []  # 解凍後削除するファイルたち
+                for s in Path(".ffmpeg").glob("*"):
+                    if s.is_dir():
+                        if len(list(s.glob("bin"))) != 0:
+                            for file in s.glob("bin\\*"):
+                                shutil.move(file, ".ffmpeg")
+                    rm_list.append(s)
+                for s in rm_list:
+                    if s.is_dir():
+                        shutil.rmtree(s)
+                    else:
+                        s.unlink(missing_ok=True)
+                return ".ffmpeg\\ffmpeg"
+
             if 'ffmpeg_path' in yml:
                 if isinstance(yml['ffmpeg_path'], str):
                     self.ffmpeg_path = yml['ffmpeg_path']
+                    return
+            print("ffmpegのパスが指定されていません。")
+
+            if os.path.isfile(".ffmpeg\\ffmpeg.exe"):
+                print(".ffmpeg内のffmpegを使用しますか？[Y/n]")
+                if y_n():
+                    self.ffmpeg_path = ".ffmpeg\\ffmpeg"
+                else:
+                    pass
+
             try:
                 subprocess.run("ffmpeg", stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-                print("ffmpegのパスが指定されていません。\nシステムPathに登録されているffmpegを使用します。")
-                self.ffmpeg_path = "ffmpeg"
-                return
+                print("システムPathに登録されているffmpegを使用しますか？[Y/n]")
+                if y_n():
+                    self.ffmpeg_path = "ffmpeg"
+                    return
+                else:
+                    print("最新版をGithubからダウンロードしますか？[Y/n]")
+                    if y_n():
+                        self.ffmpeg_path = ffmpeg_get()
+                        return
+                    else:
+                        print("ffmpegが登録されていません。")
+                        sys.exit(-102)
             except FileNotFoundError:
-                print("ffmpegのパスが指定されていません。")
-                sys.exit(-102)
+                print("システムPathにffmpegが登録されていません。")
+                print("最新版をGithubからダウンロードしますか？[Y/n]")
+                if y_n():
+                    self.ffmpeg_path = ffmpeg_get()
+                    return
+                else:
+                    print("ffmpegが登録されていません。")
+                    sys.exit(-102)
 
         def input_dir():
             if 'input_file' in yml:
@@ -161,6 +226,14 @@ class GlobalCFG:
         loglevel()
 
 
+def y_n():
+    while True:
+        s = input()
+        if s == 'N' or s == "n" or s == "No" or s == "NO" or s == "no" or s == "nO":
+            return False
+        if s == "" or s == "Y" or s == "y" or s == "Yes" or s == "yes":
+            return True
+
+
 if __name__ == "__main__":
     g = GlobalCFG()
-

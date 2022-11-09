@@ -7,9 +7,9 @@ loglevel: info
 # <time>を含めることで、実行時間を埋め込んだ出力フォルダになります。
 out_dir: out<time>\
 
-
 # 使用するffmpegのパスを指定してください。
 # システムパスに登録されたffmpegを使用する場合は'ffmpeg'と入力するか、空欄にしてください。
+# 空欄の場合、最新版をGithubからダウンロードすることも出来ます。
 ffmpeg_path: ffmpeg
 
 # 入力ファイルを指定してください。
