@@ -9,8 +9,9 @@ import yaml
 
 
 class GlobalConfig:
-    # MESSAGE_SERVER_URL = ""
-    # MESSAGE_SERVER_KEY = ""
+    MESSAGE_SERVER_URL = ""
+    MESSAGE_SERVER_KEY = ""
+    SSIM_parallel_number = 1
     out_dir = ""
     ffmpeg_path = ""
     input_file = ""
@@ -28,6 +29,46 @@ class GlobalConfig:
     loglevel = ""
 
     def __init__(self):
+        ini_path = 'EEtool.ini'
+        # iniファイルなかったらとりあえず錬成して、初期値のまま続行
+        if not os.access(ini_path, os.F_OK):
+            with open(ini_path, "w", encoding='utf8') as f:
+                f.write(
+"""# SSIMの並列数を指定します。
+SSIM_parallel_number: 2
+
+# 進捗をWebAPIに投げつける設定です。
+# 現状は開発者専用の機能です。
+MESSAGE_SERVER_URL: ""
+MESSAGE_SERVER_KEY: ""
+"""
+                )
+            print('EEtool.iniを生成します。')
+
+        if os.access(ini_path, os.R_OK):
+            with open(ini_path, 'r', encoding='utf8') as f:
+                yml = yaml.safe_load(f)
+                try:
+                    if isinstance(yml['SSIM_parallel_number'], int):
+                        self.SSIM_parallel_number = yml['SSIM_parallel_number']
+                    else:
+                        print('EEtool.ini内のSSIM_parallel_numberが不正です。')
+                        sys.exit(-1)
+                    if isinstance(yml['MESSAGE_SERVER_URL'], str):
+                        self.MESSAGE_SERVER_URL = yml['MESSAGE_SERVER_URL']
+                    else:
+                        self.MESSAGE_SERVER_URL = ""
+                    if isinstance(yml['MESSAGE_SERVER_KEY'], str):
+                        self.MESSAGE_SERVER_KEY = yml['MESSAGE_SERVER_KEY']
+                    else:
+                        self.MESSAGE_SERVER_KEY = ""
+                except TypeError:
+                    print(f"{ini_path}の中身書き換えましたか？\n削除してEEtoolを再度実行してください。")
+                    sys.exit(-1)
+
+        if self.MESSAGE_SERVER_URL == "" or self.MESSAGE_SERVER_KEY == "":
+            print('webMessageの送信先が指定されていません。')
+
         while True:
             try:
                 config_path = input("コンフィグファイルを指定してください。[config.yml]\n>")

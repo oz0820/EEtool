@@ -69,11 +69,11 @@ class Command:
         print("エンコードコマンド生成に異常があります。")
         sys.exit(-221)
 
-    def get_generate_ssim_cmd(self, ssim_tmp):
+    def ssim_cmd(self, ssim_tmp):
         global_config = self.global_config
         return f"{global_config.ffmpeg_path} -loglevel {global_config.loglevel} -i {self.out_video_path} -i {global_config.input_file} -filter_complex ssim=f={ssim_tmp} -an -f null - -y"
 
-    def get_moved_ssim_path(self):
+    def moved_ssim_path(self):
         return f"{self.out_video_path[:-3]}ssim.txt"
 
 
@@ -110,4 +110,4 @@ def generate_cmd(global_config):
                             }
                             commands.append(Command(global_config, opt))
 
-    return commands
+    return [commands, len(commands)]
