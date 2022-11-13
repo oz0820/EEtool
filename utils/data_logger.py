@@ -35,9 +35,9 @@ class Logger:
 
         with open(self.result_path, 'a', encoding='utf8') as f:
             if cmd.mode == 'quality':
-                f.write(f"{cmd.encoder},{cmd.gl_cfg.input_file},{cmd.mode},{cmd.qp},,{cmd.preset},{cmd.profile},{cmd.look_ahead},{get_delta_ft(delta_time)},{cmd.out_name}\n")
+                f.write(f"{cmd.encoder},{cmd.global_config.input_file},{cmd.mode},{cmd.qp},,{cmd.preset},{cmd.profile},{cmd.look_ahead},{get_delta_ft(delta_time)},{cmd.out_name}\n")
             elif cmd.mode == 'bitrate':
-                f.write(f"{cmd.encoder},{cmd.gl_cfg.input_file},{cmd.mode},,{cmd.bitrate},{cmd.preset},{cmd.profile},{cmd.look_ahead},{get_delta_ft(delta_time)},{cmd.out_name}\n")
+                f.write(f"{cmd.encoder},{cmd.global_config.input_file},{cmd.mode},,{cmd.bitrate},{cmd.preset},{cmd.profile},{cmd.look_ahead},{get_delta_ft(delta_time)},{cmd.out_name}\n")
 
 
 def get_delta_ft(td):
