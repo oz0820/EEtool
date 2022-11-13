@@ -1,55 +1,62 @@
 import csv
 import os
+import random
 from pathlib import Path
 
 
 def ssim_stats(result_path, out_dir):
-    b_list = []
+    csv_line = []
     with open(result_path, 'r', encoding='utf8') as f:
         reader = csv.reader(f)
         for line in reader:
-            b_list.append(line)
+            csv_line.append(line)
 
-    b_index = b_list.pop(0)
-    b_index.append("ssim Ave")
-    b_index.append("ssim Bottom 0.1%")
-    b_index.append("size(MB)")
+    csv_index = csv_line.pop(0)
+    csv_index.append("ssim Ave")
+    csv_index.append("ssim Bottom 0.1%")
+    csv_index.append("size(MB)")
 
-    for i in range(len(b_list)):
-        video_path = Path(out_dir+b_list[i][-1])
+    for i in range(len(csv_line)):
+        video_path = Path(out_dir+csv_line[i][-1])
         ssim_txt_path = video_path.with_suffix(".ssim.txt")
         ssim_csv_path = ssim_txt_path.with_suffix(".csv")
 
-        ssim_list = [["frame", "Y", "U", "V", "ALL", "SN"]]
+        ssim_csv_list = [["frame", "Y", "U", "V", "ALL", "SN"]]
         all_mux = []
 
         with open(ssim_txt_path, 'r', encoding='utf8') as f:
             for line in f.readlines():
-                s1, s2, s3, s4, s5, s6 = line.split()
-                frame = s1.split(":")[1]
-                y = s2.split(":")[1]
-                u = s3.split(":")[1]
-                v = s4.split(":")[1]
-                all = s5.split(":")[1]
-                sn = s6[1:-1]
-                ssim_list.append([frame, y, u, v, all, sn])
+                frame, y, u, v, all, sn = line.split()
+                frame = frame.split(":")[1]
+                y = y.split(":")[1]
+                u = u.split(":")[1]
+                v = v.split(":")[1]
+                all = all.split(":")[1]
+                sn = sn[1:-1]
+                ssim_csv_list.append([frame, y, u, v, all, sn])
                 all_mux.append(float(all))
 
         writer = csv.writer(ssim_csv_path.open('w', encoding='utf8', newline=""))
-        writer.writerows(ssim_list)
+        writer.writerows(ssim_csv_list)
 
         all_mux.sort()
-        b_list[i].append(str(sum(all_mux)/(len(all_mux))))
-        b_list[i].append(str(all_mux[int(len(all_mux)/1000)]))
-        b_list[i].append(str(os.path.getsize(video_path)/1024/1024))
-    b_list.insert(0, b_index)
+        csv_line[i].append(str(sum(all_mux)/(len(all_mux))))
+        csv_line[i].append(str(all_mux[int(len(all_mux)/1000)]))
+        csv_line[i].append(str(os.path.getsize(video_path)/1024/1024))
+    csv_line.insert(0, csv_index)
 
     try:
         with open(result_path, 'w', encoding='utf8', newline="") as f:
             writer = csv.writer(f)
-            writer.writerows(b_list)
+            writer.writerows(csv_line)
     except PermissionError:
         print(f"{result_path}を開く権限がありません。")
+
+        ex_result_path = result_path+str(random.randint(1000, 9999))+'.csv'
+        with open(ex_result_path, 'w', encoding='utf8', newline="") as f:
+            writer = csv.writer(f)
+            writer.writerows(csv_line)
+        print(f"{ex_result_path}に保存しました。")
 
 
 if __name__ == "__main__":
