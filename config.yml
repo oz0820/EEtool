@@ -1,3 +1,4 @@
+config_version: 2022.11.13
 # ログレベルを指定します。
 # 未指定でffmpegデフォルトのinfo
 # 推奨 warning
@@ -56,4 +57,3 @@ gop:
 # 試行するプロファイルを指定してください。
 profile:
   - main
-
