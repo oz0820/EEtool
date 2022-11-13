@@ -33,7 +33,7 @@ class Command:
         else:
             return ""
 
-    def is_bender(self):
+    def vendor(self):
         if self.encoder.find("qsv") != -1:
             return 'intel'
         elif self.encoder.find("nvenc") != -1:
@@ -44,24 +44,24 @@ class Command:
         nvenc_pre = ["-1", "p1", "p2", "p3", "p4", "p5", "p6", "p7"]
         qsv_pre = ["-1", "7", "6", "5", "4", "3", "2", "1"]
         if self.mode == 'quality':
-            if self.is_bender() == 'intel':
+            if self.vendor() == 'intel':
                 cmd = f"{gl_cfg.ffmpeg_path} -loglevel {gl_cfg.loglevel} -i {gl_cfg.input_file} {self.add_10bit_opt()}" \
                       f"-preset {qsv_pre[int(self.preset)]} -look_ahead_depth {self.look_ahead} -profile:v {self.profile} " \
                       f"-c:v {self.encoder} -q:v {self.qp} -g {self.gop} -an -y {self.out_video_path}"
                 return cmd
-            if self.is_bender() == 'nvidia':
+            if self.vendor() == 'nvidia':
                 cmd = f"{gl_cfg.ffmpeg_path} -loglevel {gl_cfg.loglevel} -i {gl_cfg.input_file} {self.add_10bit_opt()}" \
                       f"-preset {nvenc_pre[int(self.preset)]} -rc-lookahead {self.look_ahead} -profile:v {self.profile} " \
                       f"-c:v {self.encoder} -qp {self.qp} -g {self.gop} -an -y {self.out_video_path}"
                 return cmd
 
         if self.mode == 'bitrate':
-            if self.is_bender() == 'intel':
+            if self.vendor() == 'intel':
                 cmd = f"{gl_cfg.ffmpeg_path} -loglevel {gl_cfg.loglevel} -i {gl_cfg.input_file} {self.add_10bit_opt()}" \
                       f"-preset {qsv_pre[int(self.preset)]} -look_ahead_depth {self.look_ahead} -profile:v {self.profile} " \
                       f"-c:v {self.encoder} -b:v {self.bitrate} -g {self.gop} -an -y {self.out_video_path}"
                 return cmd
-            if self.is_bender() == 'nvidia':
+            if self.vendor() == 'nvidia':
                 cmd = f"{gl_cfg.ffmpeg_path} -loglevel {gl_cfg.loglevel} -i {gl_cfg.input_file} {self.add_10bit_opt()}" \
                       f"-preset {nvenc_pre[int(self.preset)]} -rc-lookahead {self.look_ahead} -profile:v {self.profile} " \
                       f"-c:v {self.encoder} -b:v {self.bitrate} -g {self.gop} -an -y {self.out_video_path}"
