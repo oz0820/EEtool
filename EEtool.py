@@ -4,7 +4,7 @@ import subprocess
 import sys
 
 from utils.generate_command import generate_cmd
-from utils.load_config import GlobalCFG
+from utils.load_config import GlobalConfig
 from utils.data_logger import Logger
 from utils.SSIM_stats import ssim_stats
 
@@ -15,12 +15,12 @@ RUN_SSIM = True
 
 
 def main():
-    gl_config = GlobalCFG()
-    if not os.path.isdir(gl_config.out_dir):
-        os.mkdir(gl_config.out_dir)
+    global_config = GlobalConfig()
+    if not os.path.isdir(global_config.out_dir):
+        os.mkdir(global_config.out_dir)
 
-    logger = Logger(log_path, gl_config.result_path)
-    commands = generate_cmd(gl_config)
+    logger = Logger(log_path, global_config.result_path)
+    commands = generate_cmd(global_config)
     encode(commands, logger)
 
     if RUN_SSIM:
@@ -28,21 +28,22 @@ def main():
 
 
 def encode(commands, logger):
-    digit = '0'+str(len(str(len(commands))))
     count = len(commands)
 
     if RUN_ENCODE:
         for i in range(len(commands)):
-            print(f"run encode command\t{i+1:{digit}}/{count}\t{commands[i].get_encode_cmd()}")
-            os.system(f"title encode【{i+1:{digit}}/{count}】{commands[i].get_encode_cmd()}")
+            progress = f"【{str(i+1).rjust(len(str(count)))} / {count}】"
+            print(f"run encode command\t{progress}\t{commands[i].get_encode_cmd()}")
+            os.system(f"title encode{progress}{commands[i].get_encode_cmd()}")
             logger.encode_start(commands[i])
             subprocess.run(commands[i].get_encode_cmd())
             logger.encode_end(commands[i])
 
     if RUN_SSIM:
         for i in range(len(commands)):
-            print(f"run ssim command\t{i + 1:{digit}}/{count}\t{commands[i].get_generate_ssim_cmd()}")
-            os.system(f"title ssim【{i + 1:{digit}}/{count}】{commands[i].get_generate_ssim_cmd()}")
+            progress = f"【{str(i+1).rjust(len(str(count)))} / {count}】"
+            print(f"run ssim command\t{progress}\t{commands[i].get_generate_ssim_cmd()}")
+            os.system(f"title ssim{progress}{commands[i].get_generate_ssim_cmd()}")
             subprocess.run(commands[i].get_generate_ssim_cmd())
             shutil.move("ssim.tmp", commands[i].get_moved_ssim_path())
 
