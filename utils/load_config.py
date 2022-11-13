@@ -8,10 +8,12 @@ from pathlib import Path
 import yaml
 
 
-class GlobalCFG:
+class GlobalConfig:
+    # MESSAGE_SERVER_URL = ""
+    # MESSAGE_SERVER_KEY = ""
     out_dir = ""
     ffmpeg_path = ""
-    input_file = []
+    input_file = ""
     result_path = ""
     yml = {}
 
@@ -28,13 +30,17 @@ class GlobalCFG:
     def __init__(self):
         while True:
             try:
-                cfg_path = input("コンフィグファイルを指定してください。[config.yml]\n>")
-                if cfg_path == "":
-                    cfg_path = "config.yml"
-                f = open(cfg_path, 'r', encoding='utf8')
+                config_path = input("コンフィグファイルを指定してください。[config.yml]\n>")
+                if config_path == "":
+                    config_path = "config.yml"
+                elif os.path.isfile(config_path):
+                    pass
+                elif not config_path.endswith(".yml"):
+                    config_path += ".yml"
+                f = open(config_path, 'r', encoding='utf8')
                 break
             except FileNotFoundError:
-                print("コンフィグファイルを読み込めませんでした。")
+                print("指定されたファイルを読み込めませんでした。")
 
         yml = yaml.safe_load(f)
         f.close()
@@ -57,9 +63,6 @@ class GlobalCFG:
             print("出力先フォルダが指定されていません。")
             sys.exit(-101)
 
-        def result_path():
-            self.result_path = self.out_dir + "result.csv"
-
         def ffmpeg():
             def ffmpeg_get():
                 if not os.path.isdir(".ffmpeg"):
@@ -68,7 +71,7 @@ class GlobalCFG:
                 # .ffmpegフォルダに何か入ってたら消したい処理
                 if len(os.listdir(".ffmpeg")) != 0:
                     print(".ffmpegフォルダ内のファイルを削除します。よろしいですか。[Y/n]")
-                    if y_n():
+                    if yes_no_choice(True):
                         for d in Path(".ffmpeg").glob("*"):
                             if d.is_dir():
                                 shutil.rmtree(d)
@@ -106,7 +109,7 @@ class GlobalCFG:
 
             if os.path.isfile(".ffmpeg\\ffmpeg.exe"):
                 print(".ffmpeg内のffmpegを使用しますか？[Y/n]")
-                if y_n():
+                if yes_no_choice(True):
                     self.ffmpeg_path = ".ffmpeg\\ffmpeg"
                 else:
                     pass
@@ -114,12 +117,12 @@ class GlobalCFG:
             try:
                 subprocess.run("ffmpeg", stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
                 print("システムPathに登録されているffmpegを使用しますか？[Y/n]")
-                if y_n():
+                if yes_no_choice(True):
                     self.ffmpeg_path = "ffmpeg"
                     return
                 else:
                     print("最新版をGithubからダウンロードしますか？[Y/n]")
-                    if y_n():
+                    if yes_no_choice(True):
                         self.ffmpeg_path = ffmpeg_get()
                         return
                     else:
@@ -128,20 +131,23 @@ class GlobalCFG:
             except FileNotFoundError:
                 print("システムPathにffmpegが登録されていません。")
                 print("最新版をGithubからダウンロードしますか？[Y/n]")
-                if y_n():
+                if yes_no_choice(True):
                     self.ffmpeg_path = ffmpeg_get()
                     return
                 else:
                     print("ffmpegが登録されていません。")
                     sys.exit(-102)
 
-        def input_dir():
+        def input_file():
             if 'input_file' in yml:
                 if isinstance(yml['input_file'], str):
                     self.input_file = yml['input_file']
                     return
             print("入力ファイルが指定されていません。\n")
             sys.exit(-103)
+
+        def result_path():
+            self.result_path = self.out_dir + self.out_dir.replace("\\", "") + "_result.csv"
 
         def encoder():
             if 'encoder' in yml:
@@ -214,9 +220,9 @@ class GlobalCFG:
             sys.exit(-109)
 
         out_dir()
-        result_path()
         ffmpeg()
-        input_dir()
+        input_file()
+        result_path()
         encoder()
         bitrate_qp()
         preset()
@@ -226,14 +232,16 @@ class GlobalCFG:
         loglevel()
 
 
-def y_n():
+def yes_no_choice(default):
     while True:
-        s = input()
-        if s == 'N' or s == "n" or s == "No" or s == "NO" or s == "no" or s == "nO":
-            return False
-        if s == "" or s == "Y" or s == "y" or s == "Yes" or s == "yes":
+        select = input().lower()
+        if select == '':
+            return default
+        if select in ['y', 'yes']:
             return True
+        if select in ['n', 'no']:
+            return False
 
 
 if __name__ == "__main__":
-    g = GlobalCFG()
+    g = GlobalConfig()
