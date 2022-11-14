@@ -62,7 +62,7 @@ MESSAGE_SERVER_KEY: ""
                         self.MESSAGE_SERVER_KEY = yml['MESSAGE_SERVER_KEY']
                     else:
                         self.MESSAGE_SERVER_KEY = ""
-                except TypeError:
+                except:
                     print(f"{ini_path}の中身書き換えましたか？\n削除してEEtoolを再度実行してください。")
                     sys.exit(-1)
 
