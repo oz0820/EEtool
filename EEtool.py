@@ -12,7 +12,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 
 log_path = "encode.log"
-VERSION = "2022.11.14.0"
+VERSION = "2022.11.14.1"
 
 RUN_ENCODE = True
 RUN_SSIM = True
@@ -31,14 +31,14 @@ def main():
 
     commands, total_count = generate_cmd(global_config)
     logger = Logger(log_path, global_config)
-    encode(commands, total_count, logger)
-
+    do_encode(commands, total_count, logger)
+    do_ssim(commands, total_count, logger)
     tpe.shutdown()
     if RUN_SSIM:
         ssim_stats(global_config.result_path, global_config.out_dir)
 
 
-def encode(commands, total_count, logger):
+def do_encode(commands, total_count, logger):
     message_builder = MessageBuilder(total_count)
     logger.send_web_message("")
     if RUN_ENCODE:
@@ -50,6 +50,9 @@ def encode(commands, total_count, logger):
             subprocess.run(command.get_encode_cmd())
             logger.encode_end(command)
 
+
+def do_ssim(commands, total_count, logger):
+    message_builder = MessageBuilder(total_count)
     def ssim(command, i):
         ssim_tmp = (command.global_config.out_dir + f"_{i:09}.ssim").replace("\\", "")
         print(message_builder.console_message("ssim", i, command.ssim_cmd(ssim_tmp)))
@@ -64,10 +67,14 @@ def encode(commands, total_count, logger):
 
 if __name__ == "__main__":
     args = sys.argv
-    if '-v' in args:
+    if '-h' in args or '-help' in args:
+        print("-v, -version: \tShow version.\n"
+              "-no-ssim: \tDo not run ssim.")
+        sys.exit(0)
+    if '-v' in args or '-version' in args:
         print(VERSION)
         sys.exit(0)
-    if 'ssim=false' in args:
+    if '-no-ssim' in args:
         RUN_SSIM = False
 
     main()
